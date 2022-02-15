@@ -11,7 +11,14 @@ firebase-debug.*.log*
 .firebase/
 firebase
 firestore
-
+*.firebaserc
+firebase.json
+firestore.indexes.json
+firestore.rules
+firebase
+firestore/
+*.firebaserc
+functions/
 # Firebase config
 
 # Uncomment this if you'd like others to create their own Firebase project.
