@@ -51,6 +51,11 @@ button {
   background: white;
   max-width: 400px;
   margin: 0 auto;
+  border: 3px solid white;
+}
+.sign-in:hover {
+  border-width: 3px;
+  border-color: #181717;
 }
 
 .dsupload {
@@ -82,4 +87,8 @@ button {
   max-height:100%;
   object-fit: contain;
   
+}
+
+input[type="file"] {
+  display: none;
 }

@@ -23,6 +23,7 @@ import "firebase/compat/analytics";
 
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useCollectionData } from "react-firebase-hooks/firestore";
+import { doc } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyARA0qKiir3MBYbAY1UNEBc31B79Hkdp7Q",
@@ -39,12 +40,13 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const firestore = firebase.firestore(); // used to access firestore doc-DB
-
+const usersRef = firestore.collection("users");
 // const db = getFirestore(firebaseApp);
 // Create a root reference
 // const storage = getStorage();
 function App() {
   const [user] = useAuthState(auth);
+
   return (
     <div className="App">
       <header className="App-header">
@@ -89,12 +91,46 @@ function SignOut() {
   );
 }
 
-function DSupload() {
+function DSupload(props) {
+  const uid = auth.currentUser.uid;
+  let userDoc = usersRef.doc(uid);
+
+  const [selectedFile, setSelectedFile] = useState();
+  const [filePicked, setFilePicked] = useState(false);
+
+  userDoc.get().then((doc) => {
+    if (doc.exists) {
+      if (doc.data().DischargeSummary == true) {
+        return 0;
+      }
+    }
+  });
+
+  const changeHandler = (event) => {
+    setSelectedFile(event.target.files[0]);
+    setFilePicked(true);
+    userDoc.set({ DischargeSummary: true });
+  };
+
+  const handleSubmission = () => {};
+
   return (
-    <div className="dsupload">
-      <p>Hello! Please upload your Discharge Summary to Medibot.</p>
-      <div className="upload-box">
-        <img className="upload" src={upload}></img>
+    <div>
+      <div className="dsupload">
+        <input
+          type="file"
+          id="discharge-summary-file"
+          title=" "
+          onChange={changeHandler}
+        />
+        <p>Hello! Please upload your Discharge Summary to MediBot.</p>
+        <label
+          for="discharge-summary-file"
+          className="upload-box"
+          onClick={handleSubmission}
+        >
+          <img className="upload" src={upload}></img>
+        </label>
       </div>
     </div>
   );
