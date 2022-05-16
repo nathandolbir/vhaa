@@ -1,37 +1,91 @@
+body {
+  background-color: #282c34;
+}
+
 .App {
   text-align: center;
 }
 
-.App-header {
-  /*background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;*/
+.App header {
   background-color: #181717;
   height: 10vh;
   min-height: 50px;
   color: white;
   position: fixed;
   width: 100%;
-  top: 0; /*top of the page*/
+
+  top: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 99; /*Z referring to stacking elements on top of each other*/
+  z-index: 99;
   padding: 10px;
   box-sizing: border-box;
 }
 
-.body {
+.App section {
   display: flex;
   flex-direction: column;
   justify-content: center;
   min-height: 100vh;
-  background-color: #282535;
+  background-color: rgb(40, 37, 53);
+}
+
+main {
+  padding: 10px;
+  height: 80vh;
+  margin: 10vh 0 10vh;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+}
+
+main::-webkit-scrollbar {
+  width: 0.25rem;
+}
+
+main::-webkit-scrollbar-track {
+  background: #1e1e24;
+}
+
+main::-webkit-scrollbar-thumb {
+  background: #6649b8;
+}
+
+form {
+  height: 10vh;
+  position: fixed;
+  bottom: 0;
+  background-color: rgb(24, 23, 23);
+  width: 100%;
+  display: flex;
+  font-size: 1.5rem;
+}
+.adduser {
+  height: 20vh;
+  position: relative;
+  bottom: 0;
+  background-color: rgb(24, 23, 23);
+  width: 100%;
+  display: flex;
+  font-size: 1.5rem;
+}
+
+form button {
+  width: 20%;
+  background-color: rgb(56, 56, 143);
+}
+
+
+input {
+  line-height: 1.5;
+  width: 100%;
+  font-size: 1.5rem;
+  background: rgb(58, 58, 58);
+  color: white;
+  outline: none;
+  border: none;
+  padding: 0 10px;
 }
 
 button {
@@ -46,19 +100,112 @@ button {
   font-size: 1.25rem;
 }
 
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
 .sign-in {
   color: #282c34;
   background: white;
   max-width: 400px;
   margin: 0 auto;
-  border: 3px solid white;
 }
-.sign-in:hover {
-  border-width: 3px;
-  border-color: #181717;
+
+
+
+
+ul {
+  padding: 0;
+  list-style-type: none;
+  background-color: #333333;
+}
+
+li {
+  float: left;
+}
+
+li h2 {
+  margin: 0;
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 16px;
+  text-decoration: none;
+}
+
+li h2:hover {
+  background-color: #111111;
+}
+
+p {
+  max-width: 500px;
+  margin-bottom: 12px;
+  line-height: 24px;
+  padding: 10px 20px;
+  border-radius: 25px;
+  position: relative;
+  color: white;
+  text-align: center;
+}
+
+div.user {
+  animation-duration: 5s;
+  animation-name: fadeout;
+  opacity: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: 12em;
+  max-width: 500px;
+  margin-bottom: 12px;
+  line-height: 24px;
+  padding: 10px 20px;
+  border-radius: 25px;
+  position: relative;
+  color: white;
+  text-align: center;
+}
+
+@keyframes fadeout {
+  from {
+    opacity: 100%;
+  }
+
+  to {
+    opacity: 0%;
+  }
+}
+
+.message {
+  display: flex;
+  align-items: center;
+}
+
+
+.sent {
+  flex-direction: row-reverse;
+}
+
+.sent p {
+  color: white;
+  background: #0b93f6;
+  align-self: flex-end;
+}
+.received p {
+  background: #e5e5ea;
+  color: black;
+}
+
+img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin: 2px 5px;
 }
 
 .dsupload {
+  background-color: green;
   margin: auto;
   top: 50%;
   right: 50%;
@@ -66,18 +213,23 @@ button {
   border-width: 6px;
   border-color: #181717;
   width: 50%;
-  height: 30%;
-  border: 3px solid ;
+  
+  border: 6px solid ;
   background-color: #e6e6e6;
   padding: 8px;
 }
+
+.dsupload p {
+  color: black;
+}
 .upload-box {
-  height: 80px;
-  width: 100%;
+
+  width: 95%;
   border-style: solid;
   border-width: 6px;
   border-color: #181717;
   text-align: center;
+
 }
 .upload-box:hover {
   background-color: #8d87ab;
@@ -91,4 +243,80 @@ button {
 
 input[type="file"] {
   display: none;
+}
+
+.dot-pulse {
+  position: relative;
+  left: -9984px;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background-color: #9880ff;
+  color: #9880ff;
+  box-shadow: 9999px 0 0 -5px #9880ff;
+  animation: dotPulse 1.5s infinite linear;
+  animation-delay: .25s;
+}
+
+.dot-pulse::before, .dot-pulse::after {
+  content: '';
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background-color: #9880ff;
+  color: #9880ff;
+}
+
+.dot-pulse::before {
+  box-shadow: 9984px 0 0 -5px #9880ff;
+  animation: dotPulseBefore 1.5s infinite linear;
+  animation-delay: 0s;
+}
+
+.dot-pulse::after {
+  box-shadow: 10014px 0 0 -5px #9880ff;
+  animation: dotPulseAfter 1.5s infinite linear;
+  animation-delay: .5s;
+}
+
+@keyframes dotPulseBefore {
+  0% {
+    box-shadow: 9984px 0 0 -5px #9880ff;
+  }
+  30% {
+    box-shadow: 9984px 0 0 2px #9880ff;
+  }
+  60%,
+  100% {
+    box-shadow: 9984px 0 0 -5px #9880ff;
+  }
+}
+
+@keyframes dotPulse {
+  0% {
+    box-shadow: 9999px 0 0 -5px #9880ff;
+  }
+  30% {
+    box-shadow: 9999px 0 0 2px #9880ff;
+  }
+  60%,
+  100% {
+    box-shadow: 9999px 0 0 -5px #9880ff;
+  }
+}
+
+@keyframes dotPulseAfter {
+  0% {
+    box-shadow: 10014px 0 0 -5px #9880ff;
+  }
+  30% {
+    box-shadow: 10014px 0 0 2px #9880ff;
+  }
+  60%,
+  100% {
+    box-shadow: 10014px 0 0 -5px #9880ff;
+  }
 }
