@@ -6,7 +6,10 @@ import "firebase/compat/firestore";
 import "firebase/compat/auth";
 
 import { useAuthState } from "react-firebase-hooks/auth";
-import { useCollectionData } from "react-firebase-hooks/firestore";
+import {
+  useCollectionData,
+  useDocumentData,
+} from "react-firebase-hooks/firestore";
 
 // credential information for accessing firebase app, not a security concern
 firebase.initializeApp({
@@ -77,34 +80,42 @@ function ChatRoom(props) {
   const dummy = useRef();
   const username = auth.currentUser.displayName;
   const messagesRef = userRef.doc("Messages").collection("Msg");
-
   const query = messagesRef.orderBy("createdAt");
   const [messages, load] = useCollectionData(query);
+  //const [metadataDoc, load] = useDocumentData(metadataRef);
+  //const []
   let msgLength = 0;
   if (load === false) {
     msgLength = messages.length;
   }
 
-  const [showAddNickname, setShowAddNickname] = useState(false);
-  metadataRef.get().then((doc) => {
-    if (doc.exists) {
-      let name = doc.get("name");
-      if (name === null || name === "" || name === undefined) {
-        setShowAddNickname(true);
-      } else {
-        setShowAddNickname(false);
-      }
-    }
-  });
+  const [showAddNickname, setShowAddNickname] = useState(true);
+  const [showAddDS, setShowAddDS] = useState(true);
 
-  const [showAddDS, setShowAddDS] = useState(false);
-  const showDS = () => {
+  React.useEffect(() => {
+    checkShowAddNickname();
+    checkShowAddDS();
+  }, [showAddNickname, showAddDS]);
+
+  function checkShowAddNickname() {
     metadataRef.get().then((doc) => {
       if (doc.exists) {
-        console.log("render");
+        let name = doc.get("name");
+        if (name === null || name === "" || name === undefined) {
+          setShowAddNickname(true);
+        } else {
+          setShowAddNickname(false);
+        }
+      }
+    });
+  }
+
+  function checkShowAddDS() {
+    metadataRef.get().then((doc) => {
+      if (doc.exists) {
         if (
           doc.get("hasDischargeSummary") !== true &&
-          showAddNickname !== true
+          showAddNickname === false
         ) {
           setShowAddDS(true);
         } else {
@@ -112,14 +123,9 @@ function ChatRoom(props) {
         }
       }
     });
-  };
-  // const [isName, setIsName] = useState(false);
-  var isName = false;
-  //const length = messages.length;
-  // console.log(length);
+  }
 
   const [formValue, setFormValue] = useState("");
-  // console.log(getNumMessages(messages));
 
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -154,9 +160,16 @@ function ChatRoom(props) {
             username={username}
             metadataRef={metadataRef}
             dummy={dummy}
+            checkShowAddNickname={checkShowAddNickname}
+            checkShowAddDS={checkShowAddDS}
           ></AddNickname>
         )}
-        {showAddDS && <DSupload metadataRef={metadataRef}></DSupload>}
+        {showAddDS && (
+          <DSupload
+            metadataRef={metadataRef}
+            checkShowAddDS={checkShowAddDS}
+          ></DSupload>
+        )}
         <span ref={dummy}></span>
       </main>
 
@@ -178,15 +191,8 @@ function AddNickname(props) {
   const [formValue, setFormValue] = useState("");
   const username = props.username;
   const metadataRef = props.metadataRef;
-  const [show, setShow] = useState(true);
-  const check = () => {
-    metadataRef.get().then((doc) => {
-      let name = doc.get("name");
-      if (name !== null || name !== "" || name !== undefined) {
-        setShow(false);
-      }
-    });
-  };
+  var poo;
+  var pee;
   const dummy = props.dummy;
   let nam = "poo";
 
@@ -198,11 +204,15 @@ function AddNickname(props) {
     setFormValue("");
     dummy.current.scrollIntoView({ behavior: "smooth" });
   };
+  let clickHandler = () => {
+    props.checkShowAddNickname();
+    props.checkShowAddDS();
+  };
 
   // ßif (viewAddName == false) return 0;
   return (
     <div>
-      {show && (
+      {
         <form className="adduser" onSubmit={setName}>
           <p>Hello {username}! What would you like Machbot to call you?</p>
           <input
@@ -211,11 +221,11 @@ function AddNickname(props) {
             placeholder="Enter a name"
           />
 
-          <button type="submit" disabled={!formValue} onClick={check}>
+          <button type="submit" disabled={!formValue} onClick={clickHandler}>
             Set
           </button>
         </form>
-      )}
+      }
     </div>
   );
 }
@@ -272,18 +282,9 @@ function BotMessage(props) {
 function DSupload(props) {
   const uid = auth.currentUser.uid;
   const metadataRef = props.metadataRef;
-  const [show, setShow] = useState(true);
+
   const [selectedFile, setSelectedFile] = useState();
   const [filePicked, setFilePicked] = useState(false);
-
-  const check = () => {
-    metadataRef.get().then((doc) => {
-      let name = doc.get("name");
-      if (name !== null || name !== "" || name !== undefined) {
-        setShow(false);
-      }
-    });
-  };
 
   const changeHandler = (event) => {
     setSelectedFile(event.target.files[0]);
@@ -291,9 +292,13 @@ function DSupload(props) {
     metadataRef.update({ hasDischargeSummary: true });
   };
 
+  let clickHandler = () => {
+    props.checkShowAddDS();
+  };
+
   return (
     <div>
-      {show && (
+      {
         <div className="dsupload">
           <input
             type="file"
@@ -305,12 +310,12 @@ function DSupload(props) {
           <label
             for="discharge-summary-file"
             className="upload-box"
-            onClick={check}
+            onClick={clickHandler}
           >
             <img className="upload" src={upload}></img>
           </label>
         </div>
-      )}
+      }
     </div>
   );
 }
