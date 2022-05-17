@@ -82,8 +82,11 @@ function ChatRoom(props) {
   const messagesRef = userRef.doc("Messages").collection("Msg");
   const query = messagesRef.orderBy("createdAt");
   const [messages, load] = useCollectionData(query);
-  //const [metadataDoc, load] = useDocumentData(metadataRef);
-  //const []
+  const [metadataDoc, loadichka] = useDocumentData(metadataRef);
+  /*const [hasDischargeSummary, name] = metadataDoc;
+  console.log(hasDischargeSummary);
+  console.log(name);*/
+  console.log(metadataDoc);
   let msgLength = 0;
   if (load === false) {
     msgLength = messages.length;
@@ -91,12 +94,37 @@ function ChatRoom(props) {
 
   const [showAddNickname, setShowAddNickname] = useState(true);
   const [showAddDS, setShowAddDS] = useState(true);
+  const [showNam, setShowNam] = useState(false);
+  const [showD, setShowD] = useState(false);
+  function showName() {
+    if (loadichka === false) {
+      let name = metadataDoc.name;
+      if (name === null || name === "" || name === undefined) {
+        console.log("hi");
+        setShowNam(true);
+      } else {
+        setShowNam(false);
+      }
+    }
+  }
+
+  function showAddDSum() {
+    if (loadichka === false) {
+      if (metadataDoc.hasDischargeSummary === false) {
+        if (showName === false) {
+          setShowD(true);
+        } else {
+          setShowD(false);
+        }
+      }
+    }
+  }
 
   React.useEffect(() => {
-    checkShowAddNickname();
-    checkShowAddDS();
-  }, [showAddNickname, showAddDS]);
-
+    console.log("hi");
+    showName();
+    showAddDSum();
+  }, [showNam, showD]);
   function checkShowAddNickname() {
     metadataRef.get().then((doc) => {
       if (doc.exists) {
@@ -155,7 +183,7 @@ function ChatRoom(props) {
               <BotMessage message={msg} />
             </React.Fragment>
           ))}
-        {showAddNickname && (
+        {showNam && (
           <AddNickname
             username={username}
             metadataRef={metadataRef}
@@ -164,7 +192,7 @@ function ChatRoom(props) {
             checkShowAddDS={checkShowAddDS}
           ></AddNickname>
         )}
-        {showAddDS && (
+        {showD && (
           <DSupload
             metadataRef={metadataRef}
             checkShowAddDS={checkShowAddDS}
