@@ -1,15 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import "./App.css";
 import upload from "./pictures/upload.png";
+import notiBell from "./pictures/notiBellEdit.png";
+import tinyTriangle from "./pictures/triangle.png";
 import firebase from "firebase/compat/app";
 import "firebase/compat/firestore";
 import "firebase/compat/auth";
-
+import "firebase/compat/storage";
+// -->README<--
 import { useAuthState } from "react-firebase-hooks/auth";
-import {
-  useCollectionData,
-  useDocumentData,
-} from "react-firebase-hooks/firestore";
+import { useCollectionData } from "react-firebase-hooks/firestore";
 
 // credential information for accessing firebase app, not a security concern
 firebase.initializeApp({
@@ -24,29 +24,45 @@ firebase.initializeApp({
 
 const auth = firebase.auth(); // used for user authorization into app
 const firestore = firebase.firestore(); // used to access firestore doc-DB
-var userRef = null;
-var metadataRef = null;
+var storage = firebase.storage(); // used to access firebase storage
+var storageRef = storage.ref(); // a reference to the storage to allow read write
+var userRef = null; // a firestore reference to a user's collection of documents
+var metadataRef = null; // a document for each user detailing some data about the user
+var userStorageRef = null; // a storage reference for the user
+var notificationsRef = null; // a collection of notifications for each user
+var blenderbotRef = null; // buffer
 
 firebase.auth().onAuthStateChanged((user) => {
+  // when user logged in, set stuff
   if (user) {
     // user is signed in
     userRef = firestore.collection(auth.currentUser.uid);
     metadataRef = userRef.doc("User_metadata");
+    userStorageRef = storageRef.child(auth.currentUser.uid);
+    notificationsRef = userRef.doc("Notifications").collection("Notis");
+    blenderbotRef = firestore.collection("blenderbotBuffer");
   } else {
     // user is not signed in
+    console.error("User is not signed in");
   }
 });
 
 function App() {
-  const [user] = useAuthState(auth);
-
+  const [user, loading] = useAuthState(auth);
   return (
     <div className="App">
       <header>
         <h1>⚛MediBot💬</h1>
-        <SignOut />
+        {user ? <Notification /> : <p></p>} {/* if user signed in, show notis*/}
+        <SignOut /> {/*always show sign out button*/}
       </header>
-      <section>{user ? <ChatRoom /> : <SignIn />}</section>
+      <section>
+        {!loading ? ( // if loading
+          <section>{user ? <ChatRoom /> : <SignIn />}</section>
+        ) : (
+          <p>Loading.... :)</p>
+        )}
+      </section>
     </div>
   );
 }
@@ -66,7 +82,61 @@ function SignIn() {
   );
 }
 
+function Notification(props) {
+  const query = notificationsRef.orderBy("createdAt");
+  const [notifications, load] = useCollectionData(query);
+  const [showNotis, setShowNotis] = useState(false);
+  const [notisExist, setNotisExist] = useState(false);
+
+  function checkNumNotis() {
+    if (notifications !== undefined && notifications.length > 0) {
+      setNotisExist(true);
+    } else setNotisExist(false);
+  }
+
+  React.useEffect(() => {
+    checkNumNotis();
+  }, [notifications]);
+
+  let clickHandler = () => {
+    let temp = !showNotis;
+    setShowNotis(temp);
+  };
+
+  return (
+    <div className="not">
+      <div className="notiBox" onClick={clickHandler}>
+        <img className="notifiBell" src={notiBell}></img>
+      </div>
+      {showNotis && (
+        <div>
+          <img className="tinyTriangle" src={tinyTriangle}></img>
+          <div className="notiList">
+            {notisExist ? (
+              notifications.map((message) => (
+                <NotificationMessage message={message} />
+              ))
+            ) : (
+              <p className="noti">No notifications to show.</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NotificationMessage(props) {
+  const { text } = props.message;
+  return (
+    <div>
+      <p className="noti">{text}</p>
+    </div>
+  );
+}
+
 function SignOut() {
+  // if there is user, auth.currentuser will be false, and sign out wont be shown
   return (
     auth.currentUser && (
       <button className="sign-out" onClick={() => auth.signOut()}>
@@ -79,18 +149,18 @@ function SignOut() {
 function ChatRoom(props) {
   const dummy = useRef();
   const username = auth.currentUser.displayName;
+  let userid = auth.currentUser.uid;
   const messagesRef = userRef.doc("Messages").collection("Msg");
   const query = messagesRef.orderBy("createdAt");
   const [messages, load] = useCollectionData(query);
-  //const [metadataDoc, load] = useDocumentData(metadataRef);
-  //const []
+  const nickname = "";
   let msgLength = 0;
   if (load === false) {
     msgLength = messages.length;
   }
 
-  const [showAddNickname, setShowAddNickname] = useState(true);
-  const [showAddDS, setShowAddDS] = useState(true);
+  const [showAddNickname, setShowAddNickname] = useState(false);
+  const [showAddDS, setShowAddDS] = useState(false);
 
   React.useEffect(() => {
     checkShowAddNickname();
@@ -124,7 +194,6 @@ function ChatRoom(props) {
       }
     });
   }
-
   const [formValue, setFormValue] = useState("");
 
   const sendMessage = async (e) => {
@@ -139,6 +208,11 @@ function ChatRoom(props) {
       metadata: false,
       uid,
       photoURL,
+    });
+    await blenderbotRef.doc("InputOutput").set({
+      input: formValue,
+      collection: userid,
+      doc: docName,
     });
 
     setFormValue("");
@@ -204,9 +278,14 @@ function AddNickname(props) {
     setFormValue("");
     dummy.current.scrollIntoView({ behavior: "smooth" });
   };
-  let clickHandler = () => {
+  let clickHandler = (val) => {
     props.checkShowAddNickname();
     props.checkShowAddDS();
+    let docName = "NicknameAdded";
+    notificationsRef.doc(docName).set({
+      text: "Welcome to Medibot, " + val + "!",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
   };
 
   // ßif (viewAddName == false) return 0;
@@ -221,7 +300,11 @@ function AddNickname(props) {
             placeholder="Enter a name"
           />
 
-          <button type="submit" disabled={!formValue} onClick={clickHandler}>
+          <button
+            type="submit"
+            disabled={!formValue}
+            onClick={clickHandler(formValue)}
+          >
             Set
           </button>
         </form>
@@ -286,13 +369,24 @@ function DSupload(props) {
   const [selectedFile, setSelectedFile] = useState();
   const [filePicked, setFilePicked] = useState(false);
 
+  let docName = "DSuploaded";
+
   const changeHandler = (event) => {
     setSelectedFile(event.target.files[0]);
     setFilePicked(true);
-    metadataRef.update({ hasDischargeSummary: true });
   };
 
   let clickHandler = () => {
+    userStorageRef
+      .child("dischargeSummary/dischargeSummary.txt")
+      .put(selectedFile)
+      .then((snapshot) => {
+        notificationsRef.doc(docName).set({
+          text: "Discharge Summary has been uploaded successfully!",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+      });
+    metadataRef.update({ hasDischargeSummary: true });
     props.checkShowAddDS();
   };
 
@@ -300,20 +394,22 @@ function DSupload(props) {
     <div>
       {
         <div className="dsupload">
+          <p>Hello! Please upload your Discharge Summary to MediBot.</p>
           <input
             type="file"
             id="discharge-summary-file"
             title=" "
+            className="dsInput"
             onChange={changeHandler}
           />
-          <p>Hello! Please upload your Discharge Summary to MediBot.</p>
-          <label
-            for="discharge-summary-file"
-            className="upload-box"
-            onClick={clickHandler}
-          >
-            <img className="upload" src={upload}></img>
-          </label>
+          <div className="buttons">
+            <label for="discharge-summary-file" className="upload-box">
+              <img className="uploadPic" src={upload}></img>
+            </label>
+            <button className="submitDS" onClick={clickHandler}>
+              Submit
+            </button>
+          </div>
         </div>
       }
     </div>

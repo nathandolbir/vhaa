@@ -1,70 +1,46 @@
-# Getting Started with Create React App
+# Virtual Health Assistant Firebase-React Project
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This readme will briefly describe this project, as it is set up. Some code which is worthy of explanation will be discussed here, while others will have short annotations within the code itself. If you have any questions or concerns, please ask away to nathandolbir@gmail.com
 
-## Available Scripts
+## Getting started
 
-In the project directory, you can run:
+To start the application on http://localhost:3000 port, access the project directory and run
 
-### `npm start`
+### `yarn start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+The page will reload when you make changes and hit 'save' anywhere in the directory.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### App.js
 
-### `npm test`
+This is the file where all the React magic happens. The entire HTML document object model (DOM) is rendered from the React components specified in here.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+#### Line 1
 
-### `npm run build`
+These are React hooks. React makes it easy to update parts of your UI or The DOM updates ONLY when specified a specified state of a React component changes. For example:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+function ButtonColor() {
+  const [buttonColor, setButtonColor] = useState("#3aeb34");
+  const clickHandler = () => {
+    setButtonColor("#dc34eb");
+  };
+  return (
+    <button style={{ color: buttonColor }} onClick={clickHandler}>
+      Hello
+    </button>
+  );
+}
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+This function, on a page, would show a button that changes text color from green to pink, without needing to do any complex event handling. This is because we set a buttonColor to be a state of the function, and for the CSS attribute "color" to reflect whatever string buttonColor presents. Clicking the button would call clickHandler, which would change the button. Beware that you must have such a clickHandler function, as calling setButtonColor directly within the in-line CSS would cause React to rerender too many times.
 
-### `npm run eject`
+#### Line 11-12
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+These are state hooks which allow you to use firebase information as states of your React app. This is very useful, as components will rerender whenever something in the Firebase backend changes.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+useAuthState checks if user is authenticated or not; useCollectionData monitors a firestore collection; there are other react-firebase hooks to use, like useDocumentData, which could be explored.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+#### App( )
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This is the main function where all other components rest within. It can be thought of as the blank page where everything else is put on top of. Try to only make component changes within the component themselves.
